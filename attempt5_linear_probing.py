@@ -1,6 +1,6 @@
-# Attempt 3: Linear Probing with a Poor Hash Function
+# Attempt 4: Linear Probing with a Good Hash Function
 # Uses movie quotes as keys.
-# The hash function adds the numerical values of each character.
+# The hash function uses each character and its position.
 # Movies with the same quote are stored in the same bucket.
 # Collisions count each occupied bucket inspected.
 
@@ -20,12 +20,14 @@ class LinearProbingHashTable:
         self.unique_keys = 0
         self.record_count = 0
 
-    # Poor hash function: adds the values of each character
+    # Hash function: multiplies each character by its position
     def hash_function(self, key):
         hash_value = 0
+        position = 1
 
         for character in key:
-            hash_value += ord(character)
+            hash_value += ord(character) * position
+            position += 1
 
         return hash_value % self.size
 
@@ -109,7 +111,7 @@ def load_movie_data(filename):
     return movies, skipped_records
 
 
-# Runs the third hash table experiment
+# Runs the fourth hash table experiment
 def main():
     movies, skipped_records = load_movie_data("MOCK_DATA.csv")
 
@@ -124,7 +126,7 @@ def main():
     construction_time = time.perf_counter() - start_time
 
     # Displays the required statistics
-    print("Attempt 3: Linear probing with poor hash function")
+    print("Attempt 4: Linear probing with better hash function")
     print("Hash table: Movie quote as key")
     print("Wasted buckets:", table.get_wasted_space())
     print("Collisions:", table.collisions)
