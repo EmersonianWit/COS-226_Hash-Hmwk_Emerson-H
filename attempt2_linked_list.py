@@ -1,6 +1,6 @@
-# Attempt 1: Linked List with a Poor Hash Function
+# Attempt 2: Linked List with a Good Hash Function
 # Uses movie titles as keys.
-# The hash function only uses the length of each title.
+# The hash function uses each character and its position.
 # Movies with the same title are stored in the same node.
 # Collisions count each occupied linked-list node inspected.
 
@@ -27,9 +27,16 @@ class LinkedListHashTable:
         self.unique_keys = 0
         self.record_count = 0
 
-    # Poor hash function: only uses the title length
+    # Hash function: multiplies each character by its position
     def hash_function(self, key):
-        return len(key) % self.size
+        hash_value = 0
+        position = 1
+
+        for character in key:
+            hash_value += ord(character) * position
+            position += 1
+
+        return hash_value % self.size
 
     # Adds a movie record to the hash table
     def insert(self, key, record):
@@ -109,11 +116,11 @@ def load_movie_data(filename):
     return movies, skipped_records
 
 
-# Runs the first hash table experiment
+# Runs the second hash table experiment
 def main():
     movies, skipped_records = load_movie_data("MOCK_DATA.csv")
 
-    # Use a prime table size slightly larger than the dataset
+    # Creates a hash table with 15,013 buckets
     table = LinkedListHashTable(15013)
 
     start_time = time.perf_counter()
@@ -123,8 +130,8 @@ def main():
 
     construction_time = time.perf_counter() - start_time
 
-    # Display the required statistics
-    print("Attempt 1: Linked list with poor hash function")
+    # Displays the required statistics
+    print("Attempt 2: Linked list with better hash function")
     print("Hash table: Movie title as key")
     print("Wasted buckets:", table.get_wasted_space())
     print("Collisions:", table.collisions)
