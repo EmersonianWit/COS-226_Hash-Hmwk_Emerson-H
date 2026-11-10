@@ -1,19 +1,26 @@
-# Attempt 4: Linear Probing with a Good Hash Function
-# Uses movie quotes as keys.
+# Attempt 5: Linked List with an Additional Optimization
+# Uses movie titles as keys.
 # The hash function uses each character and its position.
-# Movies with the same quote are stored in the same bucket.
-# Collisions count each occupied bucket inspected.
+# Movies with the same title are stored in the same node.
+# Collisions count each occupied linked-list node inspected.
 
 import csv
 import time
 
 
-# Creates the linear probing hash table
-class LinearProbingHashTable:
+# Creates one node in the linked list
+class MovieNode:
+    def __init__(self, key, record):
+        self.key = key
+        self.records = [record]
+        self.next = None
+
+
+# Creates the linked list hash table
+class LinkedListHashTable:
     def __init__(self, size):
         self.size = size
-        self.keys = [None] * size
-        self.records = [None] * size
+        self.buckets = [None] * size
 
         self.collisions = 0
         self.used_buckets = 0
@@ -37,50 +44,48 @@ class LinearProbingHashTable:
             return
 
         index = self.hash_function(key)
-        start_index = index
 
-        # Searches for an empty bucket or matching quote
-        while self.keys[index] is not None:
+        current = self.buckets[index]
+        previous = None
+
+        # Search the linked list for the title
+        while current is not None:
             self.collisions += 1
 
-            # Store duplicate quotes in the same bucket
-            if self.keys[index] == key:
-                self.records[index].append(record)
+            # Store duplicate titles in the same node
+            if current.key == key:
+                current.records.append(record)
                 self.record_count += 1
                 return
 
-            # Move to the next bucket
-            index = (index + 1) % self.size
+            previous = current
+            current = current.next
 
-            if index == start_index:
-                raise OverflowError("Hash table is full.")
+        # Create a new node if the title was not found
+        new_node = MovieNode(key, record)
 
-        # Store the movie in the empty bucket
-        self.keys[index] = key
-        self.records[index] = [record]
+        if previous is None:
+            self.buckets[index] = new_node
+            self.used_buckets += 1
+        else:
+            previous.next = new_node
 
-        self.used_buckets += 1
         self.unique_keys += 1
         self.record_count += 1
 
-    # Searches for a movie quote
+    # Searches for a movie title
     def search(self, key):
         if key is None or key.strip() == "":
             return []
 
         index = self.hash_function(key)
-        start_index = index
+        current = self.buckets[index]
 
-        # Searches the buckets until the quote is found
-        while self.keys[index] is not None:
-            if self.keys[index] == key:
-                return self.records[index][:]
+        while current is not None:
+            if current.key == key:
+                return current.records[:]
 
-            # Move to the next bucket
-            index = (index + 1) % self.size
-
-            if index == start_index:
-                break
+            current = current.next
 
         return []
 
@@ -97,13 +102,13 @@ def load_movie_data(filename):
     with open(filename, "r", newline="", encoding="utf-8-sig") as csv_file:
         reader = csv.DictReader(csv_file)
 
-        if reader.fieldnames is None or "quote" not in reader.fieldnames:
-            raise ValueError("The CSV file must contain a quote column.")
+        if reader.fieldnames is None or "movie_title" not in reader.fieldnames:
+            raise ValueError("The CSV file must contain a movie_title column.")
 
         for record in reader:
-            quote = record.get("quote")
+            title = record.get("movie_title")
 
-            if quote is None or quote.strip() == "":
+            if title is None or title.strip() == "":
                 skipped_records += 1
             else:
                 movies.append(record)
@@ -111,23 +116,23 @@ def load_movie_data(filename):
     return movies, skipped_records
 
 
-# Runs the fourth hash table experiment
+# Runs the fifth hash table experiment
 def main():
     movies, skipped_records = load_movie_data("MOCK_DATA.csv")
 
     # Creates a hash table with 20,011 buckets
-    table = LinearProbingHashTable(20011)
+    table = LinkedListHashTable(20011)
 
     start_time = time.perf_counter()
 
     for movie in movies:
-        table.insert(movie["quote"], movie)
+        table.insert(movie["movie_title"], movie)
 
     construction_time = time.perf_counter() - start_time
 
     # Displays the required statistics
-    print("Attempt 4: Linear probing with better hash function")
-    print("Hash table: Movie quote as key")
+    print("Attempt 5: Linked list with better hash function and further optimization ")
+    print("Hash table: Movie title as key")
     print("Wasted buckets:", table.get_wasted_space())
     print("Collisions:", table.collisions)
     print("Construction time:", round(construction_time, 6), "seconds")
